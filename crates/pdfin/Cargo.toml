@@ -1,0 +1,15 @@
+[package]
+name = "cadcraft-pdfin"
+description = "CADCraft PDF import: the vector paths of a PDF page (lines, curves, fills), with colours and PDF layers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cadcraft-geom = { workspace = true }
+# PDF parsing (Apache-2.0 OR MIT), the craft-libs revision patched in the workspace root; no image
+# decoders: only vector content is imported.
+hayro-syntax = { version = "0.7", default-features = false, features = ["std"] }

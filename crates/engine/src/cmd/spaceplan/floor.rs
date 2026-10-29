@@ -182,17 +182,29 @@ fn outline(s: &mut Session, p: &Value, layers: &Option<Vec<String>>) -> Result<O
         let pts = loop_points(d, e).ok_or_else(|| bad(ID, format!("{} is not a closed object (closed polyline, circle…)", h.hex())))?;
         return Ok((pts, Some(h), None));
     }
-    // The largest closed object in model space.
+    // The largest closed object in model space that isn't a sheet frame.
     let store = d.space(&Space::Model).ok_or_else(|| bad(ID, "no model space"))?;
-    let best = store
+    let mut candidates: Vec<(f64, Vec<Vec2>, Handle)> = store
         .iter()
         .filter(|e| d.is_visible(e) && on_layers(e, layers))
         .filter_map(|e| loop_points(d, e).map(|pts| (shoelace(&pts).abs(), pts, e.handle)))
-        .max_by(|a, b| a.0.total_cmp(&b.0));
-    match best {
-        Some((_, pts, h)) => Ok((pts, Some(h), None)),
+        .collect();
+    candidates.sort_by(|a, b| b.0.total_cmp(&a.0));
+    match pick_floor(&candidates) {
+        Some(i) => candidates.into_iter().nth(i).map(|(_, pts, h)| (pts, Some(h), None)).ok_or_else(|| bad(ID, "no floor outline")),
         None => Err(bad(ID, "no floor outline: draw it as a closed polyline, select it, or give `point` inside the floor")),
     }
+}
+
+/// Of closed outlines sorted largest first, the floor: the largest one that doesn't hold another
+/// outline of a quarter of its area or more (that would be a sheet frame or a title block
+/// around the plan; a floor holds only cores, shafts and columns, much smaller than itself).
+fn pick_floor(sorted: &[(f64, Vec<Vec2>, Handle)]) -> Option<usize> {
+    let holds_a_large_one = |i: usize| {
+        let Some((area, outer, _)) = sorted.get(i) else { return false };
+        sorted.iter().skip(i + 1).take_while(|c| c.0 >= area * 0.25).any(|(_, inner, _)| inner.iter().all(|p| point_in_polygon(outer, *p)))
+    };
+    (0..sorted.len().min(8)).find(|&i| !holds_a_large_one(i)).or((!sorted.is_empty()).then_some(0))
 }
 
 /// The boundary around `q` and its islands, traced over the given layers only.

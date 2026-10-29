@@ -173,3 +173,14 @@ fn analyze_measures_and_changes_nothing() {
     assert!(std::sync::Arc::ptr_eq(&doc, &s.state().unwrap().doc));
     assert_eq!(s.state().unwrap().undo.len(), undo);
 }
+
+#[test]
+fn a_sheet_frame_around_the_plan_is_not_the_floor() {
+    let mut s = tower();
+    // A frame and a title block around the plan, as a plotted sheet (or a PDF of one) has.
+    s.execute("pline", &json!({ "points": [[-5000, -8000], [45000, -8000], [45000, 25000], [-5000, 25000]], "closed": true })).unwrap();
+    s.execute("pline", &json!({ "points": [[-6000, -9000], [46000, -9000], [46000, 26000], [-6000, 26000]], "closed": true })).unwrap();
+    s.set_selection(Vec::new());
+    let r = s.execute("spaceplan", &json!({ "analyze": true })).unwrap();
+    assert_eq!(r["length"], 40.0, "{r}");
+}

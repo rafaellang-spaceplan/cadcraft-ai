@@ -57,9 +57,21 @@ fn default_out(base: &Path) -> PathBuf {
     base.with_file_name(format!("{stem}-layouts.dxf"))
 }
 
+/// Open the base plan; a PDF's vector content is imported into a new metric drawing.
+fn open_base(s: &mut Session, a: &SpaceplanArgs, io: &mut Streams) -> Result {
+    let is_pdf = a.base.extension().is_some_and(|e| e.eq_ignore_ascii_case("pdf"));
+    if !is_pdf {
+        return open(s, &a.base);
+    }
+    s.new_drawing(true);
+    let r = s.execute("pdfimport", &json!({ "path": unicode(&a.base)?, "scale": a.pdf_scale, "page": a.pdf_page }))?;
+    io.errln(format_args!("PDF imported at {}: {} objects on {}", a.pdf_scale, r["entities"], r["layers"]));
+    Ok(())
+}
+
 pub(crate) fn spaceplan(a: &SpaceplanArgs, io: &mut Streams) -> Result {
     let mut s = Session::empty();
-    open(&mut s, &a.base)?;
+    open_base(&mut s, a, io)?;
     let floor = floor_params(a);
     let mut summary = json!({});
     let brief = if a.brief.is_some() || a.brief_text.is_some() { Some(brief(a)?) } else { None };

@@ -725,6 +725,7 @@ dependencies = [
  "cadcraft-fonts",
  "cadcraft-geom",
  "cadcraft-io",
+ "cadcraft-pdfin",
  "cadcraft-render",
  "cadcraft-spaceplan",
  "craft-docpath",
@@ -785,6 +786,14 @@ dependencies = [
  "getrandom 0.4.3",
  "log",
  "serde_json",
+]
+
+[[package]]
+name = "cadcraft-pdfin"
+version = "0.14.0"
+dependencies = [
+ "cadcraft-geom",
+ "hayro-syntax",
 ]
 
 [[package]]

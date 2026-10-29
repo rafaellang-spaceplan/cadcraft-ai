@@ -86,16 +86,24 @@ pub(crate) enum Command {
 
 /// Generate office layout options on a floor plate from a briefing (read by Claude) or a program
 ///
-/// Opens BASE, finds the floor (the largest closed object, or the one around --point), reads the
+/// Opens BASE (a PDF is imported at --pdf-scale; give --point inside the floor, since the sheet's
+/// frame is its largest closed shape), finds the floor (the largest closed object, or the one
+/// around --point), reads the
 /// briefing into a space program with Claude (ANTHROPIC_API_KEY) unless --program gives one,
 /// draws the options (layers, a layout tab per option and a comparison tab) and saves the result.
 /// Prints a JSON summary: the program and its assumptions, the options' figures and, with
 /// --review, Claude's review.
 #[derive(Args)]
 pub(crate) struct SpaceplanArgs {
-    /// The base floor plan (.dwg, .dxf)
+    /// The base floor plan (.dwg, .dxf, or a vector .pdf plotted from CAD: see --pdf-scale)
     #[arg(value_name = "BASE")]
     pub(crate) base: PathBuf,
+    /// A PDF base's plot scale (the drawing is rebuilt in millimetres)
+    #[arg(long, value_name = "1:N", default_value = "1:100")]
+    pub(crate) pdf_scale: String,
+    /// A PDF base's page
+    #[arg(long, value_name = "N", default_value_t = 1, value_parser = clap::value_parser!(u64).range(1..))]
+    pub(crate) pdf_page: u64,
     /// The briefing: a text, Markdown or PDF file
     #[arg(long, value_name = "FILE", required_unless_present_any = ["brief_text", "program"])]
     pub(crate) brief: Option<PathBuf>,

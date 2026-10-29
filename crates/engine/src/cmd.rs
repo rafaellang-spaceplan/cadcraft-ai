@@ -28,6 +28,7 @@ mod modify;
 mod modify2;
 mod mtext_opts;
 mod overkill;
+mod pdfimport;
 mod pline_opts;
 pub mod plotters;
 mod props;
@@ -209,6 +210,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
         v.extend(constraints::specs());
         v.extend(lisp::specs());
         v.extend(spaceplan::specs());
+        v.extend(pdfimport::specs());
         v
     })
 }
