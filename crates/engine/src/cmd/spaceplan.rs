@@ -26,7 +26,7 @@ pub fn specs() -> Vec<CommandSpec> {
             .params(
                 "{program: {workstations?: {count, deskWidth? (1.2 m), deskDepth? (0.7 m), perSide?}, spaces?: [{kind: meeting|office|phone_booth|reception|pantry|collab|storage|custom, count?, seats?, width?, depth? | area? (m, m²), name?, enclosed?, zone?: core|facade|entrance}], corridor? (1.2 m), mainCorridor? (1.5 m), lang?: en|pt-BR}, \
                  floor: points?: [[x,y]…] | boundary?: closed object (default: the selected one, else the largest) | point?: [x,y] inside the floor (traced like HATCH), holes?: [closed objects] (default: closed objects inside), layers?: [layer] (only these count), entrance?: [x,y], units?: mm|cm|m|in|ft | unitsPerMeter? (default: INSUNITS), \
-                 options? (10), candidates? (48), seed? (1), prefix? (OPT / OPC), layouts?: bool (default true), blocks?: {desk|chair|table|round_table|sofa|counter|cabinet: block name}} \
+                 analyze?: bool (measure the floor only → {usableArea, length, width, cores, columns, hasEntrance, unitsPerMeter}), options? (10), candidates? (48), seed? (1), prefix? (OPT / OPC), layouts?: bool (default true), blocks?: {desk|chair|table|round_table|sofa|counter|cabinet: block name}} \
                  → {options: [{name, layers, score, description, strategy, metrics}], usableArea, candidates, unitsPerMeter}",
             ),
     ]
@@ -58,7 +58,51 @@ fn blocks_param(p: &Value) -> Result<BTreeMap<PieceKind, String>> {
     }
 }
 
+fn snapshot(s: &Session) -> Result<Snapshot> {
+    let st = s.state()?;
+    Ok((st.doc.clone(), st.space.clone(), st.mspace, st.selection.clone()))
+}
+
+fn restore(s: &mut Session, before: Snapshot) -> Result<()> {
+    let st = s.state_mut()?;
+    st.doc = before.0;
+    st.space = before.1;
+    st.mspace = before.2;
+    st.selection = before.3;
+    Ok(())
+}
+
+type Snapshot = (std::sync::Arc<cadcraft_doc::Drawing>, cadcraft_doc::Space, Option<cadcraft_doc::Handle>, Vec<cadcraft_doc::Handle>);
+
+fn to_model(s: &mut Session) -> Result<()> {
+    if s.space() != cadcraft_doc::Space::Model {
+        super::find_command("layout.set").map(|c| (c.run)(s, &serde_json::json!({ "name": "Model" }))).transpose()?;
+    }
+    Ok(())
+}
+
+/// `analyze: true`: measure the floor, change nothing.
+fn analyze(s: &mut Session, p: &Value) -> Result<Value> {
+    let before = snapshot(s)?;
+    let result = (|| {
+        to_model(s)?;
+        let floor = floor::from_params(s, p)?;
+        let info = cadcraft_spaceplan::floor_info(&floor).map_err(|e| bad(ID, e.to_string()))?;
+        let mut v = serde_json::to_value(info).map_err(|e| bad(ID, e.to_string()))?;
+        if let Some(o) = v.as_object_mut() {
+            o.insert("unitsPerMeter".into(), floor.unit.into());
+        }
+        Ok(v)
+    })();
+    // Tracing may have touched layer visibility: put the very same drawing back.
+    restore(s, before)?;
+    result
+}
+
 fn run(s: &mut Session, p: &Value) -> Result<Value> {
+    if bool_or(p, "analyze", false) {
+        return analyze(s, p);
+    }
     let raw = p.get("program").filter(|v| v.is_object()).ok_or_else(|| bad(ID, "`program` (object) is required"))?;
     let program: Program = serde_json::from_value(raw.clone()).map_err(|e| bad(ID, format!("program: {e}")))?;
     let settings = Settings {
@@ -76,14 +120,9 @@ fn run(s: &mut Session, p: &Value) -> Result<Value> {
         None => if program.lang == Lang::PtBr { "OPC" } else { "OPT" }.to_string(),
     };
     // The floor lives in model space; tracing and drawing work there.
-    let before = {
-        let st = s.state()?;
-        (st.doc.clone(), st.space.clone(), st.mspace, st.selection.clone())
-    };
+    let before = snapshot(s)?;
     let result = (|| {
-        if s.space() != cadcraft_doc::Space::Model {
-            super::find_command("layout.set").map(|c| (c.run)(s, &serde_json::json!({ "name": "Model" }))).transpose()?;
-        }
+        to_model(s)?;
         let floor = floor::from_params(s, p)?;
         let plan = cadcraft_spaceplan::generate(&floor, &program, &settings).map_err(|e| bad(ID, e.to_string()))?;
         if plan.options.is_empty() {
@@ -101,11 +140,7 @@ fn run(s: &mut Session, p: &Value) -> Result<Value> {
     })();
     if result.is_err() {
         // Nothing half-made stays behind.
-        let st = s.state_mut()?;
-        st.doc = before.0;
-        st.space = before.1;
-        st.mspace = before.2;
-        st.selection = before.3;
+        restore(s, before)?;
     }
     result
 }

@@ -158,3 +158,18 @@ fn bad_input_changes_nothing() {
         assert_eq!(s.state().unwrap().undo.len(), undo, "{p}");
     }
 }
+
+#[test]
+fn analyze_measures_and_changes_nothing() {
+    let mut s = tower();
+    let doc = s.state().unwrap().doc.clone();
+    let undo = s.state().unwrap().undo.len();
+    let r = s.execute("spaceplan", &json!({ "analyze": true })).unwrap();
+    assert!((r["usableArea"].as_f64().unwrap() - 751.4).abs() < 5.0, "{r}");
+    assert_eq!(r["length"], 40.0);
+    assert_eq!(r["cores"], 1);
+    assert_eq!(r["columns"], 2);
+    assert_eq!(r["unitsPerMeter"], 1000.0);
+    assert!(std::sync::Arc::ptr_eq(&doc, &s.state().unwrap().doc));
+    assert_eq!(s.state().unwrap().undo.len(), undo);
+}

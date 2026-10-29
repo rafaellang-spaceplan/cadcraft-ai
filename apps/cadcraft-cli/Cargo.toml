@@ -18,6 +18,7 @@ path = "src/main.rs"
 workspace = true
 
 [dependencies]
+cadcraft-ai = { workspace = true }
 cadcraft-engine = { workspace = true }
 cadcraft-io = { workspace = true }
 cadcraft-mcp = { workspace = true }

@@ -217,3 +217,16 @@ fn hostile_input_is_refused_without_panicking() {
     let plan = generate(&tower(), &huge, &Settings { options: 1, candidates: 1, seed: 0 }).unwrap();
     assert_eq!(plan.options[0].metrics.rooms, 0);
 }
+
+#[test]
+fn floor_info_measures_without_planning() {
+    let f = tower();
+    let info = floor_info(&f).unwrap();
+    assert!((info.usable_area - 752.0).abs() < 2.0, "{info:?}");
+    assert_eq!((info.length, info.width), (40.0, 20.0));
+    assert_eq!((info.cores, info.columns), (1, 0));
+    assert!(info.has_entrance);
+    let with_column = Floor { holes: vec![rect(16.0, 7.0, 24.0, 13.0), rect(5.0, 5.0, 5.4, 5.4)], ..tower() };
+    assert_eq!(floor_info(&with_column).unwrap().columns, 1);
+    assert!(floor_info(&Floor { unit: f64::NAN, ..tower() }).is_err());
+}

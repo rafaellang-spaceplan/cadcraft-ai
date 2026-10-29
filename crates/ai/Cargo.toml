@@ -1,0 +1,20 @@
+[package]
+name = "cadcraft-ai"
+description = "CADCraft AI: reads a free-text or PDF briefing into a space program, and reviews layout options, with Claude"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cadcraft-spaceplan = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+
+# HTTPS to the Claude API (same TLS setup as the update check). The web build has no client yet.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ureq = { version = "3.4", default-features = false, features = ["rustls-no-provider", "_ring", "gzip", "platform-verifier"] }
+base64 = "0.22"

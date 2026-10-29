@@ -179,6 +179,38 @@ pub struct Plan {
     pub angle: f64,
 }
 
+/// What the generator sees of a floor: its size in metres, usable area, cores and columns.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FloorInfo {
+    /// m².
+    pub usable_area: f64,
+    /// Along the longest edge and across it, metres.
+    pub length: f64,
+    pub width: f64,
+    pub cores: usize,
+    pub columns: usize,
+    pub has_entrance: bool,
+}
+
+/// Measure a floor without planning anything (for the briefing's interpretation, and to check
+/// the drawing units).
+pub fn floor_info(floor: &Floor) -> Result<FloorInfo, Error> {
+    // Any valid program will do: the floor is what is measured.
+    let program = Program { workstations: Workstations { count: 1, ..Workstations::default() }, ..Program::default() };
+    let ctx = Context::new(floor, &program)?;
+    let (length, width) = ((ctx.max.x - ctx.min.x), (ctx.max.y - ctx.min.y));
+    let (cores, columns) = ctx.hole_counts();
+    Ok(FloorInfo {
+        usable_area: ctx.usable_area(),
+        length: length.max(width),
+        width: length.min(width),
+        cores,
+        columns,
+        has_entrance: floor.entrance.is_some(),
+    })
+}
+
 /// Build layout options for `program` on `floor`.
 pub fn generate(floor: &Floor, program: &Program, settings: &Settings) -> Result<Plan, Error> {
     let mut program = program.clone();

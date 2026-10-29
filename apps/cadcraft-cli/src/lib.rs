@@ -18,6 +18,7 @@ mod output;
 mod perf;
 mod run;
 mod sample;
+mod spaceplan;
 
 #[cfg(test)]
 use args::Framing;
@@ -36,6 +37,7 @@ use run::run_cmds;
 #[cfg(test)]
 use run::{fill_last, returned_handle};
 use sample::sample;
+use spaceplan::spaceplan;
 
 fn install_io() {
     cadcraft_engine::cmd::file::set_io(cadcraft_engine::cmd::file::IoHooks {
@@ -99,6 +101,7 @@ where
         Command::Run(a) => a.settings.apply(),
         Command::Mcp(a) => a.settings.apply(),
         Command::Sample(a) => a.settings.apply(),
+        Command::Spaceplan(a) => a.settings.apply(),
         Command::Info(_) | Command::Commands(_) | Command::Perf(_) => {}
     }
     let mut io = Streams::new(out, err);
@@ -110,6 +113,7 @@ where
         Command::Mcp(a) => mcp(a),
         Command::Perf(a) => perf(a.target.as_ref(), &mut io),
         Command::Sample(a) => sample(a, &mut io),
+        Command::Spaceplan(a) => spaceplan(a, &mut io),
     };
     let mut code = 0;
     if let Err(e) = result {

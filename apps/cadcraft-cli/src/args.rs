@@ -81,6 +81,71 @@ pub(crate) enum Command {
     Mcp(McpArgs),
     Perf(PerfArgs),
     Sample(SampleArgs),
+    Spaceplan(SpaceplanArgs),
+}
+
+/// Generate office layout options on a floor plate from a briefing (read by Claude) or a program
+///
+/// Opens BASE, finds the floor (the largest closed object, or the one around --point), reads the
+/// briefing into a space program with Claude (ANTHROPIC_API_KEY) unless --program gives one,
+/// draws the options (layers, a layout tab per option and a comparison tab) and saves the result.
+/// Prints a JSON summary: the program and its assumptions, the options' figures and, with
+/// --review, Claude's review.
+#[derive(Args)]
+pub(crate) struct SpaceplanArgs {
+    /// The base floor plan (.dwg, .dxf)
+    #[arg(value_name = "BASE")]
+    pub(crate) base: PathBuf,
+    /// The briefing: a text, Markdown or PDF file
+    #[arg(long, value_name = "FILE", required_unless_present_any = ["brief_text", "program"])]
+    pub(crate) brief: Option<PathBuf>,
+    /// The briefing as text
+    #[arg(long, value_name = "TEXT", conflicts_with = "brief")]
+    pub(crate) brief_text: Option<String>,
+    /// A space program (JSON, as the spaceplan command takes it) instead of reading a briefing
+    #[arg(long, value_name = "FILE.json")]
+    pub(crate) program: Option<PathBuf>,
+    /// Write the program read from the briefing (to check or edit it and run again with --program)
+    #[arg(long, value_name = "FILE.json")]
+    pub(crate) save_program: Option<PathBuf>,
+    /// How many options
+    #[arg(long, default_value_t = 10, value_parser = clap::value_parser!(u64).range(1..=50))]
+    pub(crate) options: u64,
+    /// Another seed gives other options
+    #[arg(long, default_value_t = 1)]
+    pub(crate) seed: u64,
+    /// A point inside the floor (its boundary is traced like HATCH): x,y
+    #[arg(long, value_name = "x,y", value_parser = parse_xy, allow_hyphen_values = true)]
+    pub(crate) point: Option<[f64; 2]>,
+    /// Where people come in (lift lobby, main door): x,y
+    #[arg(long, value_name = "x,y", value_parser = parse_xy, allow_hyphen_values = true)]
+    pub(crate) entrance: Option<[f64; 2]>,
+    /// Only these layers' objects make the floor, cores and columns (comma-separated)
+    #[arg(long, value_name = "LAYERS", value_delimiter = ',')]
+    pub(crate) layers: Vec<String>,
+    /// Drawing units when the file doesn't say (mm, cm, m, in, ft)
+    #[arg(long, value_name = "UNITS")]
+    pub(crate) units: Option<String>,
+    /// Ask Claude to compare the options and recommend one
+    #[arg(long)]
+    pub(crate) review: bool,
+    /// The result drawing (default: BASE-layouts.dxf next to BASE)
+    #[arg(long, short, value_name = "OUT.dxf")]
+    pub(crate) out: Option<PathBuf>,
+    /// One line of JSON instead of pretty-printed
+    #[arg(long)]
+    pub(crate) compact: bool,
+    #[command(flatten)]
+    pub(crate) settings: Settings,
+}
+
+/// `x,y` with finite numbers.
+fn parse_xy(text: &str) -> Result<[f64; 2], String> {
+    let parts: Vec<f64> = text.split(',').map(|v| v.trim().parse::<f64>()).collect::<Result<_, _>>().map_err(|_| "expected x,y".to_string())?;
+    match parts.as_slice() {
+        [x, y] if x.is_finite() && y.is_finite() => Ok([*x, *y]),
+        _ => Err("expected two finite numbers: x,y".into()),
+    }
 }
 
 /// Print a drawing's summary as JSON

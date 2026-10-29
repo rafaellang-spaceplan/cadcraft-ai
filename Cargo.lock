@@ -642,9 +642,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "cadcraft-ai"
+version = "0.14.0"
+dependencies = [
+ "base64 0.22.1",
+ "cadcraft-spaceplan",
+ "log",
+ "serde",
+ "serde_json",
+ "ureq",
+]
+
+[[package]]
 name = "cadcraft-cli"
 version = "0.14.0"
 dependencies = [
+ "cadcraft-ai",
  "cadcraft-engine",
  "cadcraft-io",
  "cadcraft-mcp",

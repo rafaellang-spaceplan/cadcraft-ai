@@ -192,6 +192,7 @@ pub struct Context<'a> {
     pub min: Vec2,
     pub max: Vec2,
     cores: Vec<Rect>,
+    columns: usize,
     grid: Grid,
     facade: Field,
     core: Option<Field>,
@@ -255,7 +256,7 @@ impl<'a> Context<'a> {
         let facade = Field::sample(min, max, step, |p| poly_dist(&outline, p));
         let core =
             (!cores.is_empty()).then(|| Field::sample(min, max, step, |p| cores.iter().map(|c| poly_dist(c, p)).fold(f64::INFINITY, f64::min)));
-        let core_rects = cores
+        let core_rects: Vec<Rect> = cores
             .iter()
             .map(|c| {
                 let (lo, hi) =
@@ -266,11 +267,13 @@ impl<'a> Context<'a> {
             })
             .collect();
         let entrance = floor.entrance.filter(|p| p.is_finite()).map(|p| frame.local(p));
+        let core_rects_len = core_rects.len();
         Ok(Context {
             program,
             frame,
             min,
             max,
+            columns: holes.len().saturating_sub(core_rects_len),
             cores: core_rects,
             grid,
             facade,
@@ -280,6 +283,11 @@ impl<'a> Context<'a> {
             // A whole number of cells, so rooms line up with the grid.
             stride: ((w * h / 12_000.0).sqrt().max(0.3) / cell).round().max(1.0) * cell,
         })
+    }
+
+    /// (cores, columns).
+    pub fn hole_counts(&self) -> (usize, usize) {
+        (self.cores.len(), self.columns)
     }
 
     pub fn usable_area(&self) -> f64 {
