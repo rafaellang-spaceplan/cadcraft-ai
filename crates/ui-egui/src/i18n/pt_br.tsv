@@ -1256,3 +1256,56 @@
 	Check for Updates…	Verificar atualizações…
 	CADCraft is up to date.	O CADCraft está atualizado.
 	Could not check for updates.	Não foi possível verificar atualizações.
+	1. Floor plate	1. Pavimento
+	2. Briefing	2. Briefing
+	3. Program	3. Programa de necessidades
+	4. Options	4. Opções
+	Add room	Adicionar ambiente
+	Any	Qualquer
+	Briefing read. Check the program, then generate the options.	Briefing lido. Confira o programa e gere as opções.
+	Briefings (TXT, MD, PDF)	Briefings (TXT, MD, PDF)
+	Collaboration area	Área colaborativa
+	Core	Núcleo
+	Desk (m)	Mesa (m)
+	Entrance	Entrada
+	Façade	Fachada
+	Generate options	Gerar opções
+	Import PDF base…	Importar base em PDF…
+	Layout Options	Opções de layout
+	Load briefing file…	Carregar arquivo de briefing…
+	Location	Localização
+	Measure floor	Medir pavimento
+	Meeting room	Sala de reunião
+	Option {n}	Opção {n}
+	Other room	Outro ambiente
+	PDF drawings (PDF)	Desenhos em PDF (PDF)
+	PDF imported: {n} objects.	PDF importado: {n} objetos.
+	Pantry	Copa
+	Phone booth	Cabine
+	Private office	Sala privativa
+	Read briefing with AI	Ler briefing com IA
+	Reading the briefing with {model}…	Lendo o briefing com {model}…
+	Reception	Recepção
+	Recommended: option {n}	Recomendada: opção {n}
+	Review with AI	Avaliar com IA
+	Reviewing the options with {model}…	Avaliando as opções com {model}…
+	Room	Ambiente
+	Seats	Lugares
+	Storage	Depósito
+	The largest closed outline is the floor (select one to choose it); closed shapes inside it are cores and columns.	O maior contorno fechado é o pavimento (selecione um para escolher); as formas fechadas dentro dele são núcleos e pilares.
+	The program may not fit the usable area.	O programa pode não caber na área útil.
+	The selected closed outline is the floor; closed shapes inside it are cores and columns.	O contorno fechado selecionado é o pavimento; as formas fechadas dentro dele são núcleos e pilares.
+	Units	Unidades
+	Variation	Variação
+	Workstations	Estações de trabalho
+	all	todas
+	at scale	na escala
+	auto	auto
+	from the drawing	do desenho
+	{n} layout options drawn: one tab each, and a comparison tab.	{n} opções de layout desenhadas: uma aba para cada, e uma aba comparativa.
+	What the layout must hold: headcount, workstations, meeting rooms and their sizes, offices, booths, reception, pantry…	O que o layout precisa ter: número de pessoas, estações, salas de reunião e tamanhos, salas privativas, cabines, recepção, copa…
+	Usable area {area} m² · {l} × {w} m · {cores} core(s) · {cols} column(s)	Área útil {area} m² · {l} × {w} m · {cores} núcleo(s) · {cols} pilar(es)
+	Space Planning	Planejamento de layout
+	Generate Layout Options...	Gerar opções de layout...
+	PDF Import...	Importar PDF...
+	Briefing text	Texto do briefing

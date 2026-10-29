@@ -290,6 +290,11 @@ pub fn tr<'a>(language: &str, source: &'a str) -> &'a str {
     catalog(language).and_then(|c| c.get(&("", source))).copied().unwrap_or(source)
 }
 
+/// The language the interface is drawn in now (`en` outside a render).
+pub fn current() -> &'static str {
+    CURRENT.with(Cell::get)
+}
+
 pub fn t(source: &str) -> &str {
     CURRENT.with(|l| tr(l.get(), source))
 }

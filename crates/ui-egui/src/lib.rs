@@ -27,6 +27,7 @@ pub mod hatchdlg;
 mod mtext_editor;
 mod panel_state;
 pub mod spacemouse;
+pub mod spaceplan_dlg;
 pub mod switch;
 // The External References palette.
 pub mod xrefs;
@@ -203,6 +204,8 @@ pub struct Services {
     /// `None` where there is no native file dialog: the desktop without one asks for the name,
     /// and the web (no file system) says to drop the file (`no_file_system`).
     pub pick_lisp: Option<Box<dyn Fn(&str) -> Option<String>>>,
+    /// Pick a file to read: the filter's label and its extensions (a PDF base plan, a briefing).
+    pub pick_file: Option<Box<dyn Fn(&str, &[&str]) -> Option<String>>>,
     /// The host has no file system to read a path from (the browser): a dropped file's contents
     /// are what it loads, and APPLOAD says so instead of asking for a name it cannot read.
     pub no_file_system: bool,
@@ -285,6 +288,8 @@ pub struct CadApp {
     pub gpu_notice: Option<autosave::GpuNotice>,
     /// The Command Aliases dialog while open ([`aliasdlg`]).
     pub alias_dlg: Option<aliasdlg::AliasDlgState>,
+    /// The Layout Options dialog while open, with its briefing and program ([`spaceplan_dlg`]).
+    pub spaceplan_dlg: Option<spaceplan_dlg::SpacePlanDlg>,
     /// The Hatch and Gradient dialog while open or picking ([`hatchdlg`]).
     pub hatch_dlg: Option<hatchdlg::HatchDlgState>,
     /// The Edit Block Definition dialog ([`bedit`]).
@@ -340,6 +345,7 @@ impl CadApp {
             gpu_faults: std::sync::Arc::default(),
             gpu_notice: None,
             alias_dlg: None,
+            spaceplan_dlg: None,
             hatch_dlg: None,
             bedit: bedit::State::default(),
             #[cfg(not(target_arch = "wasm32"))]

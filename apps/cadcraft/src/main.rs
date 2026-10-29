@@ -178,6 +178,13 @@ fn services() -> Services {
             let dialog = if dir.is_empty() { dialog } else { dialog.set_directory(dir) };
             dialog.pick_file().map(|p| p.to_string_lossy().to_string())
         })),
+        pick_file: Some(Box::new(|label: &str, exts: &[&str]| {
+            rfd::FileDialog::new()
+                .add_filter(label, exts)
+                .add_filter(i18n::t("All files"), &["*"])
+                .pick_file()
+                .map(|p| p.to_string_lossy().to_string())
+        })),
         no_file_system: false,
     }
 }

@@ -496,6 +496,11 @@ fn run_ui_command_inner(app: &mut CadApp, id: &str, params: &Value) -> Option<Re
             crate::aliasdlg::open(app);
             Ok(Value::Null)
         }
+        // Typed or from the Tools menu: the Layout Options dialog. JSON calls draw directly.
+        "spaceplan" | "spl" if params.is_null() => {
+            crate::spaceplan_dlg::open(app);
+            Ok(Value::Null)
+        }
         "hatchedit" | "he" if params.is_null() && app.session.state().is_ok() => {
             crate::hatchdlg::open_edit(app);
             Ok(Value::Null)
