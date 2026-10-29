@@ -37,6 +37,7 @@ pub(crate) use props::{current_color_value, set_current_color_value};
 mod qselect;
 mod selecttools;
 mod settings;
+mod spaceplan;
 mod spline_opts;
 mod table;
 mod tolerance;
@@ -207,6 +208,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
         v.extend(txt2mtxt::specs());
         v.extend(constraints::specs());
         v.extend(lisp::specs());
+        v.extend(spaceplan::specs());
         v
     })
 }

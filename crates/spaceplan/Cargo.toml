@@ -1,0 +1,17 @@
+[package]
+name = "cadcraft-spaceplan"
+description = "CADCraft space planning: office layout options from a floor plate and a space program"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cadcraft-geom = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

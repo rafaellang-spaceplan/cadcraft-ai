@@ -713,6 +713,7 @@ dependencies = [
  "cadcraft-geom",
  "cadcraft-io",
  "cadcraft-render",
+ "cadcraft-spaceplan",
  "craft-docpath",
  "libc",
  "log",
@@ -785,6 +786,16 @@ dependencies = [
  "rayon",
  "serde_json",
  "tiny-skia",
+]
+
+[[package]]
+name = "cadcraft-spaceplan"
+version = "0.14.0"
+dependencies = [
+ "cadcraft-geom",
+ "rayon",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
