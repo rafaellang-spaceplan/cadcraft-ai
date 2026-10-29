@@ -98,6 +98,9 @@ fn route_ui_subsystems(app: &mut CadApp, id: &str, params: &Value) -> Option<Res
     if let Some(r) = crate::managers::route(app, id, params) {
         return Some(r);
     }
+    if let Some(r) = crate::spaceplan_dlg::route(app, id, params) {
+        return Some(r);
+    }
     if matches!(id, "ui.dock" | "ui.dock.reset") {
         return Some(crate::docking::command(app, id == "ui.dock.reset", params));
     }
@@ -494,11 +497,6 @@ fn run_ui_command_inner(app: &mut CadApp, id: &str, params: &Value) -> Option<Re
         // Typed or from the Tools menu: the Command Aliases dialog. JSON calls keep the JSON form.
         "aliasedit" if params.is_null() => {
             crate::aliasdlg::open(app);
-            Ok(Value::Null)
-        }
-        // Typed or from the Tools menu: the Layout Options dialog. JSON calls draw directly.
-        "spaceplan" | "spl" if params.is_null() => {
-            crate::spaceplan_dlg::open(app);
             Ok(Value::Null)
         }
         "hatchedit" | "he" if params.is_null() && app.session.state().is_ok() => {

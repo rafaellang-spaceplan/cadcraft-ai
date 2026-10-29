@@ -85,6 +85,15 @@ pub fn open(app: &mut CadApp) {
     app.ui.dialog = Some("spaceplan".into());
 }
 
+/// SPACEPLAN typed or from the Tools menu opens the dialog; JSON calls draw directly.
+pub fn route(app: &mut CadApp, id: &str, params: &Value) -> Option<Result<Value, String>> {
+    if matches!(id, "spaceplan" | "spl") && params.is_null() {
+        open(app);
+        return Some(Ok(Value::Null));
+    }
+    None
+}
+
 fn kind_label(k: SpaceKind) -> &'static str {
     match k {
         SpaceKind::Meeting => crate::tl!("Meeting room"),
